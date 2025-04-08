@@ -33,14 +33,17 @@ const InputContainer = styled.div`
   background-color: #f0f0f0;
 `;
 
-const Input = styled.input`
-  height: 20px;
+//input은 줄넘김 하는 기능이 없음
+const Input = styled.textarea`
+  max-height: 28px;
+  min-height: 20px;
   flex: 1;
   border: none;
   background-color: #f0f0f0;
   margin-right: 10px;
   font-size: 16px;
   font-family: "Pretendard";
+  resize: none;
 
   &:focus {
     outline: none;
@@ -107,6 +110,7 @@ function Chatbot() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);  // 🔥 현재 활성 대화 인덱스
+  const [sendLock, setSendLock] = useState(true); // 응답 전까지 보내기 버튼 비 활성화
   const messagesEndRef = useRef(null);
   const messageRefs = useRef([]);  // 🔥 메시지별 Ref 배열
   const dispatch = useDispatch();
@@ -204,6 +208,7 @@ useEffect(() => {
 
   const handleSend = async () => {
     if (input.trim() === "") return;
+    setSendLock(false); // 메시지 비활성화
 
     const userMessage = {
       role: "user",
@@ -229,11 +234,18 @@ useEffect(() => {
     } catch (error) {
       console.error("Error sending message:", error);
     }
+    setSendLock(true); //메시지 비활성화 해제
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      handleSend();
+      if(e.shiftKey) {
+        return;
+      }
+      else{
+        e.preventDefault();
+        handleSend();
+      }
     }
   };
   
@@ -271,16 +283,18 @@ useEffect(() => {
         <RestoreButton onClick={handleRestoreState}>♻️ 복원</RestoreButton>
       </ButtonContainer>
       <InputContainer>
-        <Input
+        {sendLock && <Input
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => 
+            setInput(e.target.value)
+          }
           onKeyDown={handleKeyDown}
           placeholder="메세지 입력하기"
-        />
-        <Button onClick={handleSend}>
+        />}
+        {sendLock && <Button onClick={handleSend}>
           <span className="material-symbols-outlined md-white md-24">arrow_upward</span>
-        </Button>
+        </Button>}
       </InputContainer>
     </ChatContainer>
   );
