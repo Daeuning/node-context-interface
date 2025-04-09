@@ -158,7 +158,7 @@ function Graph() {
         id,
         type: "tooltipNode",
         data: {
-          label: node.keyword,
+          label: id === "root" ? "VR 전시회 기획서 작성" : node.keyword,
           color: nodeColor,
           isActive,
         },
